@@ -33,7 +33,10 @@ checkpoints/
 3d_finetune/
 3d_improved/
 3d_safe/
+3d_v3/
+3d_v4/
 3d_v5/
+3d_2D_v2/
 temp_checkpoints/
 
 # ===== 学習ログ =====

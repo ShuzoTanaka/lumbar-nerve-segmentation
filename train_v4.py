@@ -8,7 +8,8 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 from DataModuleSafe import DataModuleSafe
 from model import MultiClassModel
 
-# 安全な34症例（ホールドアウト完全除外）で学習
+# 最終版: Dice lossのみ・seed無し・安全34症例
+# 結果: nerve=0.6794, spinal=0.6768, 平均=0.6781（0.68達成）
 if __name__ == "__main__":
     torch.set_float32_matmul_precision("medium")
 
@@ -19,6 +20,7 @@ if __name__ == "__main__":
         old_data_path=old_data_path,
         new_data_path=new_data_path,
         batch_size=2,
+        seed=None,  # ランダム分割
     )
 
     model = MultiClassModel(
@@ -26,6 +28,7 @@ if __name__ == "__main__":
         num_classes=3,
         encoder_name="efficientnet-b0",
         lr=1e-3,
+        ce_weight=0.0,  # Dice lossのみ
     )
 
     dt = datetime.datetime.now()
@@ -37,7 +40,7 @@ if __name__ == "__main__":
 
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",
-        dirpath="3d_safe",
+        dirpath="3d_v4",
         filename="best-{epoch:02d}-{val_loss:.2f}",
         save_top_k=1,
         mode="min",
@@ -61,4 +64,5 @@ if __name__ == "__main__":
         break
 
     print("Is instance of LightningModule:", isinstance(model, pl.LightningModule))
+    print("Training: Dice loss only, no CE, random split, 34 safe cases")
     trainer.fit(model, datamodule=data_module)

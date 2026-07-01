@@ -2,11 +2,10 @@
 
 3D U-Net による腰椎 MRI の神経・脊髄自動セグメンテーション。PyTorch Lightning で実装。
 
-## 結果 (v5 最終モデル)
+## 結果 (v4 最終モデル)
 
 | クラス | Dice係数 |
 |---|---|
-| 背景 (class 0) | 0.9993 |
 | **神経 nerve (class 1)** | **0.6794** |
 | **脊髄 spinal (class 2)** | **0.6768** |
 | **nerve + spinal 平均** | **0.6781** |
@@ -37,13 +36,14 @@ pytorchLightning/
 ├── model.py              # MultiClassModel (3D U-Net, Dice/CE loss対応)
 ├── dataset.py            # NiftiDataset, NnUNetDataset (データ読み込み・拡張)
 ├── DataModuleSafe.py     # 安全版データモジュール (ホールドアウト除外)
-├── DataModuleCombined.py # 参照用・リーク版データモジュール
+├── DataModule2DSafe.py   # 2D版データモジュール (全スライス使用)
 ├── dataModule.py         # 既存データのみのデータモジュール
 ├── dataModuleForTest.py  # テスト専用データモジュール
-├── train_v5.py           # 最終学習スクリプト (Dice only, 34症例, random split)
-├── train_v4.py           # 安全版 (Dice+CE, seed=42)
-├── train_v3.py           # 参照用 (データリークあり・不正)
-├── test.py               # テストスクリプト (v5チェックポイント使用)
+├── train_v4.py           # 最終学習スクリプト (Dice only, 34症例, random split)
+├── train_v3.py           # 比較用 (Dice+CE, seed=42)
+├── train_v2.py           # Fine-tuning試験版
+├── train_2D_v2.py        # 2D U-Net学習スクリプト (全スライス, 34症例)
+├── test.py               # テストスクリプト
 └── .gitignore
 ```
 
@@ -60,7 +60,7 @@ pip install lightning segmentation_models_pytorch_3d nibabel
 
 ```bash
 cd pytorchLightning
-python train_v5.py
+python train_v4.py
 ```
 
 ## テスト
@@ -77,11 +77,10 @@ python test.py
 
 ## バージョン比較
 
-| バージョン | 設定 | nerve | spinal | 平均 | 信頼性 |
-|---|---|---|---|---|---|
-| v4 | CE loss + seed=42, 34症例 | 0.645 | 0.544 | 0.595 | ◎ |
-| **v5** | **Dice only + random split, 34症例** | **0.679** | **0.677** | **0.678** | **◎** |
-| v3 (参照) | データリークあり (不正) | 0.734 | 0.868 | 0.801 | × |
+| バージョン | 設定 | nerve | spinal | 平均 |
+|---|---|---|---|---|
+| v3 | Dice+CE loss, seed=42, 34症例 | 0.645 | 0.544 | 0.595 |
+| **v4** | **Dice only, random split, 34症例** | **0.679** | **0.677** | **0.678** |
 
 ## 環境
 

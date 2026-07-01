@@ -5,17 +5,18 @@ import lightning as L
 import pytorch_lightning as pl
 from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
-from DataModuleCombined import DataModuleCombined
+from DataModuleSafe import DataModuleSafe
 from model import MultiClassModel
 
-# 全データ (既存25 + Dataset001_lumber 39) = 約64症例で学習
+# 安全な34症例（ホールドアウト完全除外）で学習
+# Dice + CE loss、seed=42固定分割
 if __name__ == "__main__":
     torch.set_float32_matmul_precision("medium")
 
     old_data_path = Path("C:/Users/orilab/Desktop/Tanaka/pytorchLightning/0206data/train_val")
     new_data_path = Path("C:/Users/orilab/Desktop/Tanaka/pytorchLightning/Dataset001_lumber")
 
-    data_module = DataModuleCombined(
+    data_module = DataModuleSafe(
         old_data_path=old_data_path,
         new_data_path=new_data_path,
         batch_size=2,
@@ -37,7 +38,7 @@ if __name__ == "__main__":
 
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",
-        dirpath="3d_combined",
+        dirpath="3d_v3",
         filename="best-{epoch:02d}-{val_loss:.2f}",
         save_top_k=1,
         mode="min",
@@ -60,7 +61,5 @@ if __name__ == "__main__":
         print(f"Batch mask shape: {masks.shape}")
         break
 
-    print("Model type:", type(model))
     print("Is instance of LightningModule:", isinstance(model, pl.LightningModule))
-
     trainer.fit(model, datamodule=data_module)
