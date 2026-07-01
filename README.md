@@ -34,16 +34,18 @@
 ```
 pytorchLightning/
 ├── model.py              # MultiClassModel (3D U-Net, Dice/CE loss対応)
+├── model_2D.py           # MultiClassModel (2D U-Net)
 ├── dataset.py            # NiftiDataset, NnUNetDataset (データ読み込み・拡張)
-├── DataModuleSafe.py     # 安全版データモジュール (ホールドアウト除外)
-├── DataModule2DSafe.py   # 2D版データモジュール (全スライス使用)
+├── DataModuleSafe.py     # 3D安全版データモジュール (ホールドアウト除外)
+├── DataModule2DSafe.py   # 2D版データモジュール (全スライス, ホールドアウト除外)
 ├── dataModule.py         # 既存データのみのデータモジュール
 ├── dataModuleForTest.py  # テスト専用データモジュール
-├── train_v4.py           # 最終学習スクリプト (Dice only, 34症例, random split)
-├── train_v3.py           # 比較用 (Dice+CE, seed=42)
+├── train_v4.py           # 3D最終学習スクリプト (Dice only, 34症例, random split)
+├── train_v3.py           # 3D比較用 (Dice+CE, seed=42)
 ├── train_v2.py           # Fine-tuning試験版
 ├── train_2D_v2.py        # 2D U-Net学習スクリプト (全スライス, 34症例)
-├── test.py               # テストスクリプト
+├── test.py               # 3Dテストスクリプト
+├── test_2D_v2.py         # 2Dテストスクリプト (ホールドアウト5症例)
 └── .gitignore
 ```
 
@@ -74,6 +76,20 @@ python test.py
 - 入力画像: NIfTI形式 (`.nii` または `.nii.gz`)
 - ラベル: 0=背景, 1=神経, 2=脊髄
 - nnUNet形式にも対応 (`*_0000.nii.gz` / `*.nii.gz`)
+
+## 2D vs 3D 比較実験
+
+同一の34症例・同一のホールドアウト5症例でテストした結果：
+
+| モデル | nerve Dice | spinal Dice | 平均 |
+|---|---|---|---|
+| **2D U-Net** | **0.7110** | 0.5853 | 0.6481 |
+| **3D U-Net** | 0.6794 | **0.6768** | **0.6781** |
+
+**考察：**
+- 神経根（nerve）は2Dモデルが優位 → 各スライスに点状に現れる局所構造の検出が得意
+- 脊髄（spinal）は3Dモデルが優位 → 複数スライスにまたがる連続構造の把握に3Dが有効
+- **Tractographyパイプラインでは神経根ROIが出発点となるため、2Dモデルの採用が合理的**
 
 ## バージョン比較
 
