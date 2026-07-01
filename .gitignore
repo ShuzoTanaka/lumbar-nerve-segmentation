@@ -1,0 +1,55 @@
+# ===== 医用画像データ =====
+*.nii
+*.nii.gz
+*.dcm
+*.mha
+*.mhd
+*.mif
+*.tck
+*.bvec
+*.bval
+
+# ===== データフォルダ =====
+0206data/
+0206nii/
+Niftis/
+data3/
+data4/
+data temp/
+temp0206/
+test_data/
+
+# ===== 学習済みモデル・チェックポイント =====
+*.ckpt
+*.pth
+*.pt
+*.h5
+*.onnx
+*.safetensors
+checkpoints/
+3d_1009/
+temp_checkpoints/
+
+# ===== 学習ログ =====
+lightning_logs/
+logs/
+
+# ===== 推論・テスト出力 =====
+nifti_predictions*/
+predictions*/
+results*/
+inference_output/
+
+# ===== Python仮想環境・キャッシュ =====
+.lightningenv/
+.niseienv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ===== OS・エディタ =====
+.DS_Store
+Thumbs.db
+
+test_predictions/
