@@ -1,14 +1,14 @@
-# Medical Image Segmentation — Nerve & Spinal Cord in Lumbar MRI
+# Medical Image Segmentation — Nerve & Dural Sac in Lumbar MRI
 
-腰椎MRIから神経根（nerve）・脊髄（spinal）を自動セグメンテーションする多クラスセグメンテーションモデル。PyTorch Lightningで実装し、3D U-Netと2D U-Netの両方を学習・比較した上で、下流のTractographyパイプラインの要件を踏まえて**2D U-Netを採用モデル**として選定した。
+腰椎MRIから神経根（nerve）・硬膜管（dural sac）を自動セグメンテーションする多クラスセグメンテーションモデル。PyTorch Lightningで実装し、3D U-Netと2D U-Netの両方を学習・比較した上で、下流のTractographyパイプラインの要件を踏まえて**2D U-Netを採用モデル**として選定した。
 
 ## 採用モデル: 2D U-Net
 
 | クラス | Dice係数 |
 |---|---|
 | **神経根 nerve (class 1)** | **0.7110** |
-| 脊髄 spinal (class 2) | 0.5853 |
-| nerve + spinal 平均 | 0.6481 |
+| 硬膜管 dural sac (class 2) | 0.5853 |
+| nerve + dural sac 平均 | 0.6481 |
 
 採用理由は次の「2D vs 3D 比較実験」を参照。
 
@@ -16,14 +16,14 @@
 
 同一の34症例・同一のホールドアウト5症例でテストした結果：
 
-| モデル | nerve Dice | spinal Dice | 平均 |
+| モデル | nerve Dice | dural sac Dice | 平均 |
 |---|---|---|---|
 | **2D U-Net（採用）** | **0.7110** | 0.5853 | 0.6481 |
 | 3D U-Net | 0.6794 | **0.6768** | **0.6781** |
 
 **考察：**
 - 神経根（nerve）は2Dモデルが優位 → 各スライスに点状に現れる局所構造の検出が得意
-- 脊髄（spinal）は3Dモデルが優位 → 複数スライスにまたがる連続構造の把握に3Dが有効
+- 硬膜管（dural sac）は3Dモデルが優位 → 複数スライスにまたがる連続構造の把握に3Dが有効
 - 平均Diceだけを見れば3Dモデルの方が高いが、後段のTractographyパイプラインでは神経根ROIの検出が解析の起点となるため、**平均値ではなく神経根の精度を優先し2Dモデルの採用が合理的と判断した**
 
 ## モデル構成
@@ -33,7 +33,7 @@
 | アーキテクチャ | 2D U-Net | 3D U-Net |
 | エンコーダ | EfficientNet-B0 | EfficientNet-B0 |
 | 入力チャネル | 1 (グレースケール) | 1 (グレースケール) |
-| 出力クラス | 3 (背景 / 神経根 / 脊髄) | 3 (背景 / 神経根 / 脊髄) |
+| 出力クラス | 3 (背景 / 神経根 / 硬膜管) | 3 (背景 / 神経根 / 硬膜管) |
 | Loss 関数 | Dice Loss (multiclass) | Dice Loss (multiclass) |
 | オプティマイザ | Adam (lr=1e-3) | Adam (lr=1e-3) + CosineAnnealingLR (T_max=200) |
 | エポック数 | 100 | 200 |
@@ -101,14 +101,14 @@ python test.py
 ## データ仕様
 
 - 入力画像: NIfTI形式 (`.nii` または `.nii.gz`)
-- ラベル: 0=背景, 1=神経根, 2=脊髄
+- ラベル: 0=背景, 1=神経根, 2=硬膜管
 - nnUNet形式にも対応 (`*_0000.nii.gz` / `*.nii.gz`)
 
 ## 3Dモデルの学習設定比較（参考）
 
 3D U-Net単体での設定違いによる精度比較（採用モデルの選定には直接関係しないが、Loss構成・分割方法の検証記録として残す）：
 
-| バージョン | 設定 | nerve | spinal | 平均 |
+| バージョン | 設定 | nerve | dural sac | 平均 |
 |---|---|---|---|---|
 | v3 | Dice+CE loss, seed=42, 34症例 | 0.645 | 0.544 | 0.595 |
 | v4 | Dice only, random split, 34症例 | 0.679 | 0.677 | 0.678 |

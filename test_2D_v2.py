@@ -72,7 +72,7 @@ for img_path in image_files:
         all_tn += tn
 
     case_dice = smp.metrics.f1_score(tp, fp, fn, tn, reduction="none").mean(dim=0)
-    print(f" → nerve={case_dice[1].item():.4f}, spinal={case_dice[2].item():.4f}")
+    print(f" → nerve={case_dice[1].item():.4f}, dural sac={case_dice[2].item():.4f}")
 
 # 全症例集計
 mean_dice = smp.metrics.f1_score(all_tp, all_fp, all_fn, all_tn, reduction="none").mean(dim=0)
@@ -81,6 +81,6 @@ print()
 print("=" * 45)
 print("【2D U-Net テスト結果】")
 print(f"nerve(class 1)  Dice: {mean_dice[1].item():.4f}")
-print(f"spinal(class 2) Dice: {mean_dice[2].item():.4f}")
-print(f"Overall Dice (nerve+spinal 平均): {mean_dice[1:].mean().item():.4f}")
+print(f"dural sac(class 2) Dice: {mean_dice[2].item():.4f}")
+print(f"Overall Dice (nerve+dural sac 平均): {mean_dice[1:].mean().item():.4f}")
 print("=" * 45)

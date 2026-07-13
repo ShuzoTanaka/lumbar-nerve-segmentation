@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # モデルの設定
     model = MultiClassModel(
         in_channels=1,  # 入力チャネル数（グレースケール=1）
-        num_classes=3,  # クラス数（背景, nerve, spinal）
+        num_classes=3,  # クラス数（背景, nerve, dural sac）
         encoder_name="efficientnet-b0",  # エンコーダ
     )
 

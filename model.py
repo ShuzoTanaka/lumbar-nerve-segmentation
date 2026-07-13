@@ -121,7 +121,7 @@ class MultiClassModel(L.LightningModule):
         mean_dice = all_dice.mean(dim=0)
 
         print(f"nerve(class 1)  Dice: {mean_dice[1].item():.4f}")
-        print(f"spinal(class 2) Dice: {mean_dice[2].item():.4f}")
-        print(f"Overall Dice (nerve+spinal 平均): {mean_dice[1:].mean().item():.4f}")
+        print(f"dural sac(class 2) Dice: {mean_dice[2].item():.4f}")
+        print(f"Overall Dice (nerve+dural sac 平均): {mean_dice[1:].mean().item():.4f}")
 
         self.test_outputs = []
