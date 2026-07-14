@@ -21,10 +21,7 @@ mask_dir = test_data_path / "masks"
 image_files = sorted(image_dir.glob("*.nii"))
 print(f"テスト症例数: {len(image_files)}")
 
-all_tp = None
-all_fp = None
-all_fn = None
-all_tn = None
+case_dice_list = []
 
 for img_path in image_files:
     base = img_path.stem
@@ -59,27 +56,22 @@ for img_path in image_files:
     vol_preds = torch.cat(vol_preds, dim=0)   # [D, H, W]
     vol_masks = torch.cat(vol_masks, dim=0)   # [D, H, W]
 
+    # 3Dモデルの評価方法と統一するため、スライスごとではなく症例(ボリューム)全体を
+    # 1サンプルとして混同行列を集計し、症例につき1つのDiceを算出する
     tp, fp, fn, tn = smp.metrics.get_stats(
-        vol_preds, vol_masks, mode="multiclass", num_classes=3
-    )
+        vol_preds.unsqueeze(0), vol_masks.unsqueeze(0), mode="multiclass", num_classes=3
+    )  # [1, C]
 
-    if all_tp is None:
-        all_tp, all_fp, all_fn, all_tn = tp, fp, fn, tn
-    else:
-        all_tp += tp
-        all_fp += fp
-        all_fn += fn
-        all_tn += tn
-
-    case_dice = smp.metrics.f1_score(tp, fp, fn, tn, reduction="none").mean(dim=0)
+    case_dice = smp.metrics.f1_score(tp, fp, fn, tn, reduction="none")[0]  # [C]
+    case_dice_list.append(case_dice)
     print(f" → nerve={case_dice[1].item():.4f}, dural sac={case_dice[2].item():.4f}")
 
-# 全症例集計
-mean_dice = smp.metrics.f1_score(all_tp, all_fp, all_fn, all_tn, reduction="none").mean(dim=0)
+# 症例ごとのDiceを平均(3Dモデルと同じ「症例単位Diceの平均」で統一)
+mean_dice = torch.stack(case_dice_list).mean(dim=0)
 
 print()
 print("=" * 45)
-print("【2D U-Net テスト結果】")
+print("【2D U-Net テスト結果（症例単位Diceの平均、3Dモデルと同一の集計方法）】")
 print(f"nerve(class 1)  Dice: {mean_dice[1].item():.4f}")
 print(f"dural sac(class 2) Dice: {mean_dice[2].item():.4f}")
 print(f"Overall Dice (nerve+dural sac 平均): {mean_dice[1:].mean().item():.4f}")
